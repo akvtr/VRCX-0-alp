@@ -295,7 +295,7 @@ fn show_blocking_dialog(app: &tauri::App, kind: MessageDialogKind, message: &str
     app.dialog()
         .message(message)
         .kind(kind)
-        .title("VRCX-0")
+        .title("VRCX-0-alp")
         .blocking_show();
 }
 

@@ -270,9 +270,9 @@ fn apply_tray_tooltip(app_handle: &AppHandle, state: TrayTooltipState) {
         return;
     };
     let base = if state.notify {
-        "VRCX-0 (new notification)"
+        "VRCX-0-alp (new notification)"
     } else {
-        "VRCX-0"
+        "VRCX-0-alp"
     };
     let realtime_label = state
         .realtime_interrupted
