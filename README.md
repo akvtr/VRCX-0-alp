@@ -45,9 +45,11 @@ records. Implementation: `crates/platform/src/alp_seed.rs`.
 
 ### No updates or installer
 
-There are no releases or installers. VRCX-0-alp is always run from source (see
-below), and the built-in update check is turned off so it never offers to
-replace itself with the official VRCX-0.
+There is no installer. VRCX-0-alp is run from source (see below) or from an
+unsigned executable on the
+[Releases](https://github.com/akvtr/VRCX-0-alp/releases) page. The built-in
+update check is turned off so it never offers to replace itself with the
+official VRCX-0; download a newer release by hand.
 
 ### ALP Modules
 
@@ -123,7 +125,7 @@ it in the tray; use the tray icon's quit option in that case.
 npm run tauri:build -- --no-sign --no-bundle
 ```
 
-The executable is written to `src-tauri\target\release\`.
+The executable is written to `target\release\vrcx-0.exe`.
 
 ### Before the first launch
 
