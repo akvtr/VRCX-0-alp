@@ -2,6 +2,7 @@ import { describe, expect, it } from 'vitest';
 
 import {
     buildLastJoinedByInstance,
+    elapsedSinceJoin,
     extractWorldId,
     isSameInstance,
     parseWorldInstances,
@@ -103,5 +104,27 @@ describe('buildLastJoinedByInstance', () => {
             '12345': '2026-11-20T10:00:00.000Z',
             '67890': '2026-11-05T10:00:00.000Z'
         });
+    });
+});
+
+describe('elapsedSinceJoin', () => {
+    const NOW = Date.parse('2026-11-26T12:00:00.000Z');
+
+    it('uses hours and minutes within a day', () => {
+        expect(
+            elapsedSinceJoin(Date.parse('2026-11-26T08:47:30.000Z'), NOW)
+        ).toEqual({ unit: 'minutes', hours: 3, minutes: 12 });
+        expect(
+            elapsedSinceJoin(Date.parse('2026-11-26T11:59:40.000Z'), NOW)
+        ).toEqual({ unit: 'minutes', hours: 0, minutes: 1 });
+    });
+
+    it('switches to whole days after 24 hours', () => {
+        expect(
+            elapsedSinceJoin(Date.parse('2026-11-25T12:00:00.000Z'), NOW)
+        ).toEqual({ unit: 'days', days: 1 });
+        expect(
+            elapsedSinceJoin(Date.parse('2026-11-22T06:00:00.000Z'), NOW)
+        ).toEqual({ unit: 'days', days: 4 });
     });
 });

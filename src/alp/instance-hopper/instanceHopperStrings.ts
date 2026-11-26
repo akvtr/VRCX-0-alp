@@ -1,4 +1,5 @@
 import { useAlpLocale } from '../shared/useAlpLocale';
+import type { ElapsedSinceJoin } from './instanceHopperModel';
 
 const english = {
     title: 'Instance Hopper',
@@ -24,9 +25,13 @@ const english = {
     inviteSent: 'Invited',
     inviteFailedBadge: 'Failed',
     lastScanned: 'Last scanned',
-    lastJoined: 'Last joined',
-    neverJoined: 'Never joined',
-    templates: 'Templates'
+    templates: 'Templates',
+    joinedAgo: (elapsed: ElapsedSinceJoin) =>
+        elapsed.unit === 'days'
+            ? `${elapsed.days}d ago`
+            : elapsed.hours
+              ? `${elapsed.hours}h ${elapsed.minutes}m ago`
+              : `${elapsed.minutes}m ago`
 };
 
 type HopperStrings = typeof english;
@@ -55,9 +60,13 @@ const japanese: HopperStrings = {
     inviteSent: '送信済み',
     inviteFailedBadge: '失敗',
     lastScanned: '最終スキャン',
-    lastJoined: '最終参加',
-    neverJoined: '参加履歴なし',
-    templates: 'テンプレート'
+    templates: 'テンプレート',
+    joinedAgo: (elapsed: ElapsedSinceJoin) =>
+        elapsed.unit === 'days'
+            ? `${elapsed.days}日前`
+            : elapsed.hours
+              ? `${elapsed.hours}時間${elapsed.minutes}分前`
+              : `${elapsed.minutes}分前`
 };
 
 export function useInstanceHopperStrings(): HopperStrings {

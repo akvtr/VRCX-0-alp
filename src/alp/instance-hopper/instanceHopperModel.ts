@@ -1,6 +1,8 @@
+import { DAY_MS, MINUTE_MS } from '@/shared/constants/time';
 import { parseLocation } from '@/shared/utils/location';
 import { isRecord } from '@/shared/utils/record';
 
+const MINUTES_PER_HOUR = 60;
 const WORLD_ID_PATTERN = /wrld_[0-9a-f-]{36}/i;
 
 export type HopperCandidate = {
@@ -91,4 +93,28 @@ export function buildLastJoinedByInstance(
         }
     }
     return lastJoined;
+}
+
+export type ElapsedSinceJoin =
+    | { unit: 'days'; days: number }
+    | { unit: 'minutes'; hours: number; minutes: number };
+
+/**
+ * Splits the time since a join into whole days once it passes a day,
+ * otherwise into hours and minutes (at least one minute).
+ */
+export function elapsedSinceJoin(
+    joinedAtMs: number,
+    nowMs: number
+): ElapsedSinceJoin {
+    const elapsedMs = Math.max(0, nowMs - joinedAtMs);
+    if (elapsedMs >= DAY_MS) {
+        return { unit: 'days', days: Math.floor(elapsedMs / DAY_MS) };
+    }
+    const totalMinutes = Math.max(1, Math.floor(elapsedMs / MINUTE_MS));
+    return {
+        unit: 'minutes',
+        hours: Math.floor(totalMinutes / MINUTES_PER_HOUR),
+        minutes: totalMinutes % MINUTES_PER_HOUR
+    };
 }

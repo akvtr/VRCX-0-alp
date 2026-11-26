@@ -3,14 +3,20 @@ import { useState, type FormEvent } from 'react';
 
 import { EmptyState, PageScaffold } from '@/components/layout/PageScaffold';
 import { formatCompactDateTime } from '@/lib/dateTime';
+import { useNowMs } from '@/lib/useNowMs';
 import { cn } from '@/lib/utils';
+import { MINUTE_MS } from '@/shared/constants/time';
 import { Badge } from '@/ui/shadcn/badge';
 import { Button } from '@/ui/shadcn/button';
 import { Input } from '@/ui/shadcn/input';
 import { Label } from '@/ui/shadcn/label';
 
 import { AlpModuleHeader } from '../shared/AlpModuleHeader';
-import { isSameInstance, type HopperCandidate } from './instanceHopperModel';
+import {
+    elapsedSinceJoin,
+    isSameInstance,
+    type HopperCandidate
+} from './instanceHopperModel';
 import { useInstanceHopperStrings } from './instanceHopperStrings';
 import { useInstanceHopper, type InviteState } from './useInstanceHopper';
 import { useWorldTemplateNames } from './useWorldTemplateNames';
@@ -31,6 +37,8 @@ export function InstanceHopperPage() {
     const [minUsers, setMinUsers] = useState(DEFAULT_MIN_USERS);
     const hopper = useInstanceHopper({ worldInput, minUsers });
     const templateNames = useWorldTemplateNames(WORLD_TEMPLATE_IDS);
+    // Relative join times only show minutes, so a minute tick is enough.
+    const nowMs = useNowMs({ intervalMs: MINUTE_MS });
 
     function handleSubmit(event: FormEvent<HTMLFormElement>) {
         event.preventDefault();
@@ -172,6 +180,7 @@ export function InstanceHopperPage() {
                             lastJoinedAt={hopper.lastJoinedByInstance.get(
                                 candidate.instanceName
                             )}
+                            nowMs={nowMs}
                             onInvite={() => void hopper.inviteTo(candidate)}
                         />
                     ))}
@@ -187,6 +196,7 @@ function CandidateRow({
     isCurrent,
     inviteState,
     lastJoinedAt,
+    nowMs,
     onInvite
 }: {
     candidate: HopperCandidate;
@@ -194,6 +204,7 @@ function CandidateRow({
     isCurrent: boolean;
     inviteState: InviteState | undefined;
     lastJoinedAt: string | undefined;
+    nowMs: number;
     onInvite: () => void;
 }) {
     const strings = useInstanceHopperStrings();
@@ -211,26 +222,32 @@ function CandidateRow({
                         </Badge>
                     ) : null}
                 </span>
-                <span className="text-muted-foreground text-xs">
-                    {lastJoinedAt
-                        ? `${strings.lastJoined} ${formatCompactDateTime(lastJoinedAt)}`
-                        : strings.neverJoined}
-                    {inviteState ? (
-                        <span
-                            className={cn(
-                                'ml-2',
-                                inviteState === 'failed'
-                                    ? 'text-destructive'
-                                    : 'text-primary'
-                            )}
-                        >
-                            {inviteState === 'failed'
-                                ? strings.inviteFailedBadge
-                                : strings.inviteSent}
-                        </span>
-                    ) : null}
-                </span>
+                {inviteState ? (
+                    <span
+                        className={cn(
+                            'text-xs',
+                            inviteState === 'failed'
+                                ? 'text-destructive'
+                                : 'text-primary'
+                        )}
+                    >
+                        {inviteState === 'failed'
+                            ? strings.inviteFailedBadge
+                            : strings.inviteSent}
+                    </span>
+                ) : null}
             </div>
+            {lastJoinedAt ? (
+                <Badge
+                    variant="outline"
+                    title={formatCompactDateTime(lastJoinedAt)}
+                    className="border-border/70 text-muted-foreground h-5 shrink-0 rounded-full px-2 text-[10px] font-medium tabular-nums"
+                >
+                    {strings.joinedAgo(
+                        elapsedSinceJoin(Date.parse(lastJoinedAt), nowMs)
+                    )}
+                </Badge>
+            ) : null}
             <span className="text-muted-foreground pt-0.5 text-xs tabular-nums">
                 {candidate.userCount}
                 {capacity ? `/${capacity}` : ''}
