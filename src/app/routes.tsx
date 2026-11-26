@@ -1,6 +1,7 @@
 import { lazy, Suspense, type ComponentType, type ReactElement } from 'react';
 import { Navigate } from 'react-router';
 
+import { alpRoutes } from '@/alp/routes';
 import { Spinner } from '@/ui/shadcn/spinner';
 
 export function RouteLoadingFallback() {
@@ -341,5 +342,6 @@ export const protectedRoutes: AppRouteDefinition[] = [
             () => import('@/features/settings/SettingsPage'),
             'SettingsPage'
         )
-    }
+    },
+    ...alpRoutes
 ];

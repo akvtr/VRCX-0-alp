@@ -1,3 +1,5 @@
+import { alpNavDefinitions } from '@/alp/navDefinitions';
+
 import { toolNavDefinitions } from './tools';
 
 const navDefinitions = [
@@ -134,7 +136,8 @@ const navDefinitions = [
         labelKey: 'nav_tooltip.tools',
         routeName: 'tools'
     },
-    ...toolNavDefinitions
+    ...toolNavDefinitions,
+    ...alpNavDefinitions
 ];
 
 export { navDefinitions };
