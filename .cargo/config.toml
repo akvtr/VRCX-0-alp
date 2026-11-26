@@ -3,3 +3,8 @@ rustflags = ["-C", "target-cpu=x86-64-v2"]
 
 [target.'cfg(all(windows, target_env = "msvc"))']
 linker = "lld-link.exe"
+
+# VRCX-0-alp is a separate app; checking the official release feed would offer
+# to replace it with upstream VRCX-0.
+[env]
+VRCX_0_DISABLE_UPDATE_CHECK = "1"
