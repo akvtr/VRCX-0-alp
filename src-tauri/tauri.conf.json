@@ -1,8 +1,8 @@
 {
     "$schema": "https://schema.tauri.app/config/2",
-    "productName": "VRCX-0",
+    "productName": "VRCX-0-alp",
     "version": "2.35.0",
-    "identifier": "com.vrcx-0.app",
+    "identifier": "com.vrcx-0-alp.app",
     "build": {
         "frontendDist": "../dist",
         "devUrl": "http://localhost:9000",
@@ -34,7 +34,7 @@
             {
                 "label": "main",
                 "create": false,
-                "title": "VRCX-0",
+                "title": "VRCX-0-alp",
                 "width": 1024,
                 "height": 768,
                 "minWidth": 320,
@@ -47,7 +47,7 @@
         "trayIcon": {
             "id": "main",
             "iconPath": "icons/icon.png",
-            "tooltip": "VRCX-0"
+            "tooltip": "VRCX-0-alp"
         }
     },
     "bundle": {
@@ -81,7 +81,7 @@
     "plugins": {
         "deep-link": {
             "desktop": {
-                "schemes": ["vrcx-0"]
+                "schemes": ["vrcx-0-alp"]
             }
         },
         "updater": {

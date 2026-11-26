@@ -9,7 +9,7 @@ use crate::error::AppError;
 use crate::state::AppState;
 use vrcx_0_runtime_host_desktop::deep_link::DeepLinkAction;
 
-const APP_DEEP_LINK_SCHEME: &str = "vrcx-0";
+const APP_DEEP_LINK_SCHEME: &str = "vrcx-0-alp";
 
 #[cfg(target_os = "macos")]
 mod macos {

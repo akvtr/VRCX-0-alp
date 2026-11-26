@@ -4,10 +4,10 @@ use std::path::{Path, PathBuf};
 
 use crate::error::Error;
 
-const APP_DIR_NAME: &str = "VRCX-0";
+const APP_DIR_NAME: &str = "VRCX-0-alp";
 const DATA_DIR_POINTER_FILE: &str = "VRCX-0.data-dir.json";
 const DATA_DIR_ARG: &str = "--data-dir";
-const PROFILE_DB_FILE: &str = "VRCX-0.sqlite3";
+pub(crate) const PROFILE_DB_FILE: &str = "VRCX-0.sqlite3";
 const PROFILE_CONFIG_FILE: &str = "VRCX-0.json";
 const WRITE_PROBE_FILE: &str = ".vrcx-0-write-test";
 
@@ -97,7 +97,21 @@ pub fn default_app_data_dir() -> Result<PathBuf, Error> {
 }
 
 pub fn resolve_app_data_dir() -> Result<AppDataDirResolution, Error> {
-    resolve_app_data_dir_from_args(default_app_data_dir()?, std::env::args_os().skip(1))
+    let default_dir = default_app_data_dir()?;
+    seed_alp_data_dir(&default_dir);
+    resolve_app_data_dir_from_args(default_dir, std::env::args_os().skip(1))
+}
+
+fn seed_alp_data_dir(default_dir: &Path) {
+    // A failed seed only means starting with an empty profile, so it must not
+    // block startup.
+    let result = crate::alp_seed::official_app_data_dir()
+        .and_then(|source_dir| crate::alp_seed::seed_from_official(&source_dir, default_dir));
+    match result {
+        Ok(true) => tracing::info!("seeded VRCX-0-alp data from the official VRCX-0 profile"),
+        Ok(false) => {}
+        Err(error) => tracing::warn!(error = %error, "could not seed VRCX-0-alp data"),
+    }
 }
 
 fn resolve_app_data_dir_from_args(
@@ -255,7 +269,9 @@ fn parse_data_dir_arg(args: impl IntoIterator<Item = OsString>) -> Result<Option
     Ok(data_dir)
 }
 
-fn read_persisted_app_data_dir_from_default(default_dir: &Path) -> Result<Option<PathBuf>, Error> {
+pub(crate) fn read_persisted_app_data_dir_from_default(
+    default_dir: &Path,
+) -> Result<Option<PathBuf>, Error> {
     let pointer_path = app_data_dir_pointer_path(default_dir);
     if !pointer_path.exists() {
         return Ok(None);

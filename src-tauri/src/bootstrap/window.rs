@@ -403,7 +403,7 @@ pub(super) fn configure_tray(app: &tauri::App, state: &AppState) -> Result<(), t
             );
             return Ok(());
         }
-        let mut tray = tauri::tray::TrayIconBuilder::with_id("main").tooltip("VRCX-0");
+        let mut tray = tauri::tray::TrayIconBuilder::with_id("main").tooltip("VRCX-0-alp");
         if let Some(icon) = crate::commands::host::window::tray_icon_image(false) {
             tray = tray.icon(icon.clone());
         }

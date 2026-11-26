@@ -48,7 +48,7 @@ impl PendingDeepLinks {
 
 pub fn parse_deep_link(value: &str) -> Option<DeepLinkAction> {
     let url = url::Url::parse(value.trim()).ok()?;
-    if url.scheme() != "vrcx-0" || url.fragment().is_some() {
+    if url.scheme() != "vrcx-0-alp" || url.fragment().is_some() {
         return None;
     }
     if url.host_str() == Some("instance") && url.path() == "/open" {
@@ -133,7 +133,7 @@ mod tests {
     #[test]
     fn parses_open_world_deep_link_with_full_world_id() {
         let action =
-            parse_deep_link("vrcx-0://world/open?id=wrld_12345678-1234-1234-1234-1234567890ab");
+            parse_deep_link("vrcx-0-alp://world/open?id=wrld_12345678-1234-1234-1234-1234567890ab");
 
         assert_eq!(
             action,
@@ -145,7 +145,7 @@ mod tests {
 
     #[test]
     fn parses_import_collection_deep_link_with_base62_shortcode() {
-        let action = parse_deep_link("vrcx-0://collection/import?id=AbC123z");
+        let action = parse_deep_link("vrcx-0-alp://collection/import?id=AbC123z");
 
         assert_eq!(
             action,
@@ -158,7 +158,7 @@ mod tests {
     #[test]
     fn parses_open_instance_preserving_access_tags_and_invite_token() {
         let instance_id = "12345~private(usr_12345678-1234-1234-1234-1234567890ab)~canRequestInvite~region(jp)~nonce(ab-cd)";
-        let mut url = url::Url::parse("vrcx-0://instance/open").unwrap();
+        let mut url = url::Url::parse("vrcx-0-alp://instance/open").unwrap();
         url.query_pairs_mut()
             .append_pair("id", "wrld_12345678-1234-1234-1234-1234567890ab")
             .append_pair("instanceId", instance_id)
@@ -178,7 +178,7 @@ mod tests {
     #[test]
     fn parses_open_instance_without_invite_token() {
         assert_eq!(
-            parse_deep_link("vrcx-0://instance/open?id=wrld_12345678-1234-1234-1234-1234567890ab&instanceId=12345~region(us)"),
+            parse_deep_link("vrcx-0-alp://instance/open?id=wrld_12345678-1234-1234-1234-1234567890ab&instanceId=12345~region(us)"),
             Some(DeepLinkAction::OpenInstance {
                 world_id: "wrld_12345678-1234-1234-1234-1234567890ab".into(),
                 instance_id: "12345~region(us)".into(),
@@ -206,7 +206,7 @@ mod tests {
             format!("id={world_id}&instanceId=12345&launchToken=token%20value"),
         ] {
             assert_eq!(
-                parse_deep_link(&format!("vrcx-0://instance/open?{query}")),
+                parse_deep_link(&format!("vrcx-0-alp://instance/open?{query}")),
                 None,
                 "{query}"
             );
@@ -214,7 +214,7 @@ mod tests {
         for invalid_instance_id in [
             "123 45", "123\n45", "123\0", "123:45", "123/45", "123?45", "123#45", "123&45",
         ] {
-            let mut url = url::Url::parse("vrcx-0://instance/open").unwrap();
+            let mut url = url::Url::parse("vrcx-0-alp://instance/open").unwrap();
             url.query_pairs_mut()
                 .append_pair("id", world_id)
                 .append_pair("instanceId", invalid_instance_id);
@@ -229,7 +229,7 @@ mod tests {
     #[test]
     fn preserves_secure_only_launch_token_without_short_name() {
         assert_eq!(
-            parse_deep_link("vrcx-0://instance/open?id=wrld_12345678-1234-1234-1234-1234567890ab&instanceId=12345&launchToken=secure%2Btoken%2F%3D"),
+            parse_deep_link("vrcx-0-alp://instance/open?id=wrld_12345678-1234-1234-1234-1234567890ab&instanceId=12345&launchToken=secure%2Btoken%2F%3D"),
             Some(DeepLinkAction::OpenInstance {
                 world_id: "wrld_12345678-1234-1234-1234-1234567890ab".into(),
                 instance_id: "12345".into(),
@@ -241,8 +241,9 @@ mod tests {
 
     #[test]
     fn parses_open_avatar_deep_link_with_full_avatar_id() {
-        let action =
-            parse_deep_link("vrcx-0://avatar/open?id=avtr_12345678-1234-1234-1234-1234567890ab");
+        let action = parse_deep_link(
+            "vrcx-0-alp://avatar/open?id=avtr_12345678-1234-1234-1234-1234567890ab",
+        );
 
         assert_eq!(
             action,
@@ -256,11 +257,11 @@ mod tests {
     fn rejects_malformed_deep_link_inputs() {
         for value in [
             "https://worlds.vrcx-0.dev/c/AbC123z",
-            "vrcx-0://world/open?id=wrld_not-a-vrchat-id",
-            "vrcx-0://avatar/open?id=avtr_not-a-vrchat-id",
-            "vrcx-0://collection/import?id=abc/../def",
-            "vrcx-0://collection/import?id=AbC123z?x=1",
-            "vrcx-0://user/open?id=usr_12345678-1234-1234-1234-1234567890ab",
+            "vrcx-0-alp://world/open?id=wrld_not-a-vrchat-id",
+            "vrcx-0-alp://avatar/open?id=avtr_not-a-vrchat-id",
+            "vrcx-0-alp://collection/import?id=abc/../def",
+            "vrcx-0-alp://collection/import?id=AbC123z?x=1",
+            "vrcx-0-alp://user/open?id=usr_12345678-1234-1234-1234-1234567890ab",
         ] {
             assert_eq!(parse_deep_link(value), None, "{value}");
         }
