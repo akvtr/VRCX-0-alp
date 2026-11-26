@@ -1,5 +1,5 @@
 import { CompassIcon, MailIcon, RouteIcon } from 'lucide-react';
-import { useState } from 'react';
+import { useState, type FormEvent } from 'react';
 
 import { EmptyState, PageScaffold } from '@/components/layout/PageScaffold';
 import { formatCompactDateTime } from '@/lib/dateTime';
@@ -28,6 +28,13 @@ export function InstanceHopperPage() {
     const [minUsers, setMinUsers] = useState(DEFAULT_MIN_USERS);
     const hopper = useInstanceHopper({ worldInput, minUsers });
 
+    function handleSubmit(event: FormEvent<HTMLFormElement>) {
+        event.preventDefault();
+        if (!hopper.sending) {
+            void hopper.scan();
+        }
+    }
+
     return (
         <PageScaffold className="gap-4 overflow-y-auto">
             <AlpModuleHeader
@@ -36,7 +43,10 @@ export function InstanceHopperPage() {
                 description={strings.description}
             />
 
-            <div className="grid gap-3 sm:grid-cols-[1fr_auto]">
+            <form
+                className="grid gap-3 sm:grid-cols-[1fr_auto]"
+                onSubmit={handleSubmit}
+            >
                 <div className="flex flex-col gap-1.5">
                     <Label htmlFor="instance-hopper-world">
                         {strings.worldLabel}
@@ -70,7 +80,7 @@ export function InstanceHopperPage() {
                         }
                     />
                 </div>
-            </div>
+            </form>
 
             <div className="flex flex-wrap items-center gap-2">
                 <Button
