@@ -1,19 +1,20 @@
 /**
- * Sidebar entries for VRCX-0-alp features.
+ * Sidebar entry for VRCX-0-alp modules.
  *
  * Upstream files only spread this list in, so merging upstream changes
- * touches one line and removing a feature means deleting its entry here.
+ * touches one line. Individual modules are listed on the hub page instead
+ * of the sidebar; see modules.tsx.
  */
-export const INSTANCE_HOPPER_PATH = '/alp/instance-hopper';
+export const ALP_MODULES_PATH = '/alp';
 
 export const alpNavDefinitions = [
     {
-        key: 'alp-instance-hopper',
-        icon: 'lucide:Compass',
-        tooltip: 'Instance Hopper',
-        labelKey: 'Instance Hopper',
+        key: 'alp-modules',
+        icon: 'lucide:Boxes',
+        tooltip: 'ALP Modules',
+        labelKey: 'ALP Modules',
         titleIsCustom: true,
         routeName: null,
-        path: INSTANCE_HOPPER_PATH
+        path: ALP_MODULES_PATH
     }
 ];

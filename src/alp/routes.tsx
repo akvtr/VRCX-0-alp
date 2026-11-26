@@ -1,33 +1,37 @@
 /**
- * Routes for VRCX-0-alp features, spread into the upstream route table.
+ * Routes for VRCX-0-alp, spread into the upstream route table.
  */
-import { lazy, Suspense } from 'react';
+import { lazy, Suspense, type ReactNode } from 'react';
 
 import type { AppRouteDefinition } from '@/app/routes';
 import { Spinner } from '@/ui/shadcn/spinner';
 
-import { INSTANCE_HOPPER_PATH } from './navDefinitions';
+import { alpModules } from './modules';
+import { ALP_MODULES_PATH } from './navDefinitions';
 
-const InstanceHopperPage = lazy(async () => {
-    const module = await import('./instance-hopper/InstanceHopperPage');
-    return { default: module.InstanceHopperPage };
+const AlpModulesPage = lazy(async () => {
+    const module = await import('./AlpModulesPage');
+    return { default: module.AlpModulesPage };
 });
 
-function AlpRouteFallback() {
+function withFallback(children: ReactNode) {
     return (
-        <div className="flex h-full items-center justify-center">
-            <Spinner className="size-4" />
-        </div>
+        <Suspense
+            fallback={
+                <div className="flex h-full items-center justify-center">
+                    <Spinner className="size-4" />
+                </div>
+            }
+        >
+            {children}
+        </Suspense>
     );
 }
 
 export const alpRoutes: AppRouteDefinition[] = [
-    {
-        path: INSTANCE_HOPPER_PATH,
-        element: (
-            <Suspense fallback={<AlpRouteFallback />}>
-                <InstanceHopperPage />
-            </Suspense>
-        )
-    }
+    { path: ALP_MODULES_PATH, element: withFallback(<AlpModulesPage />) },
+    ...alpModules.map(({ path, Page }) => ({
+        path,
+        element: withFallback(<Page />)
+    }))
 ];

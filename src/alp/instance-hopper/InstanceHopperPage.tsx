@@ -1,4 +1,4 @@
-import { RouteIcon } from 'lucide-react';
+import { CompassIcon, RouteIcon } from 'lucide-react';
 import { useState } from 'react';
 
 import { EmptyState, PageScaffold } from '@/components/layout/PageScaffold';
@@ -9,6 +9,7 @@ import { Button } from '@/ui/shadcn/button';
 import { Input } from '@/ui/shadcn/input';
 import { Label } from '@/ui/shadcn/label';
 
+import { AlpModuleHeader } from '../shared/AlpModuleHeader';
 import { isSameInstance, type HopperCandidate } from './instanceHopperModel';
 import { useInstanceHopperStrings } from './instanceHopperStrings';
 import { useInstanceHopper, type HopperStatus } from './useInstanceHopper';
@@ -38,15 +39,11 @@ export function InstanceHopperPage() {
 
     return (
         <PageScaffold className="gap-4 overflow-y-auto">
-            <div className="flex flex-col gap-1">
-                <h1 className="flex items-center gap-2 text-lg font-semibold">
-                    <RouteIcon className="size-5" />
-                    {strings.title}
-                </h1>
-                <p className="text-muted-foreground text-sm">
-                    {strings.description}
-                </p>
-            </div>
+            <AlpModuleHeader
+                icon={CompassIcon}
+                title={strings.title}
+                description={strings.description}
+            />
 
             <div className="grid gap-3 sm:grid-cols-[1fr_auto_auto]">
                 <div className="flex flex-col gap-1.5">

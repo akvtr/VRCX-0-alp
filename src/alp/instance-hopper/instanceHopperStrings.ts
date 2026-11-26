@@ -1,7 +1,5 @@
-import { useTranslation } from 'react-i18next';
+import { useAlpLocale } from '../shared/useAlpLocale';
 
-// Kept inside the module instead of the shared locale files so the feature
-// can be added or removed without touching upstream translations.
 const english = {
     title: 'Instance Hopper',
     description:
@@ -65,6 +63,5 @@ const japanese: HopperStrings = {
 };
 
 export function useInstanceHopperStrings(): HopperStrings {
-    const { i18n } = useTranslation();
-    return i18n.language?.startsWith('ja') ? japanese : english;
+    return useAlpLocale() === 'ja' ? japanese : english;
 }
