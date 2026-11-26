@@ -25,7 +25,8 @@ const english = {
     inviteFailedBadge: 'Failed',
     lastScanned: 'Last scanned',
     lastJoined: 'Last joined',
-    neverJoined: 'Never joined'
+    neverJoined: 'Never joined',
+    templates: 'Templates'
 };
 
 type HopperStrings = typeof english;
@@ -55,7 +56,8 @@ const japanese: HopperStrings = {
     inviteFailedBadge: '失敗',
     lastScanned: '最終スキャン',
     lastJoined: '最終参加',
-    neverJoined: '参加履歴なし'
+    neverJoined: '参加履歴なし',
+    templates: 'テンプレート'
 };
 
 export function useInstanceHopperStrings(): HopperStrings {

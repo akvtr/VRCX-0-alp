@@ -56,44 +56,53 @@ export function useInstanceHopper(settings: HopperSettings) {
         settingsRef.current = settings;
     }, [settings]);
 
-    const scan = useCallback(async (): Promise<HopperCandidate[] | null> => {
-        const nextWorldId = extractWorldId(settingsRef.current.worldInput);
-        if (!nextWorldId) {
-            toast.add({ type: 'error', title: strings.invalidWorld });
-            return null;
-        }
-        setScanning(true);
-        try {
-            const [world, previousVisits] = await Promise.all([
-                // force bypasses the summary cache, which drops the instance list.
-                worldProfileRepository.getWorldProfile({
-                    worldId: nextWorldId,
-                    force: true
-                }),
-                // Join history is a nice-to-have; a Game Log failure must not
-                // block the scan.
-                gameLogRepository
-                    .getPreviousInstancesByWorldId({ worldId: nextWorldId })
-                    .catch(() => [])
-            ]);
-            setLastJoinedByInstance(buildLastJoinedByInstance(previousVisits));
-            const selected = selectCandidates(
-                parseWorldInstances(nextWorldId, world),
-                settingsRef.current.minUsers
-            );
-            setWorldId(nextWorldId);
-            setWorldName(world.name);
-            setCapacity(world.capacity);
-            setCandidates(selected);
-            setLastScannedAt(Date.now());
-            return selected;
-        } catch {
-            toast.add({ type: 'error', title: strings.scanFailed });
-            return null;
-        } finally {
-            setScanning(false);
-        }
-    }, [strings]);
+    // Callers that just changed the input (templates) pass it directly,
+    // because the settings ref only catches up after the next render.
+    const scan = useCallback(
+        async (
+            worldInput: string = settingsRef.current.worldInput
+        ): Promise<HopperCandidate[] | null> => {
+            const nextWorldId = extractWorldId(worldInput);
+            if (!nextWorldId) {
+                toast.add({ type: 'error', title: strings.invalidWorld });
+                return null;
+            }
+            setScanning(true);
+            try {
+                const [world, previousVisits] = await Promise.all([
+                    // force bypasses the summary cache, which drops the instance list.
+                    worldProfileRepository.getWorldProfile({
+                        worldId: nextWorldId,
+                        force: true
+                    }),
+                    // Join history is a nice-to-have; a Game Log failure must not
+                    // block the scan.
+                    gameLogRepository
+                        .getPreviousInstancesByWorldId({ worldId: nextWorldId })
+                        .catch(() => [])
+                ]);
+                setLastJoinedByInstance(
+                    buildLastJoinedByInstance(previousVisits)
+                );
+                const selected = selectCandidates(
+                    parseWorldInstances(nextWorldId, world),
+                    settingsRef.current.minUsers
+                );
+                setWorldId(nextWorldId);
+                setWorldName(world.name);
+                setCapacity(world.capacity);
+                setCandidates(selected);
+                setLastScannedAt(Date.now());
+                return selected;
+            } catch {
+                toast.add({ type: 'error', title: strings.scanFailed });
+                return null;
+            } finally {
+                setScanning(false);
+            }
+        },
+        [strings]
+    );
 
     const recordInviteState = useCallback(
         (location: string, state: InviteState) => {

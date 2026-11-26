@@ -13,9 +13,12 @@ import { AlpModuleHeader } from '../shared/AlpModuleHeader';
 import { isSameInstance, type HopperCandidate } from './instanceHopperModel';
 import { useInstanceHopperStrings } from './instanceHopperStrings';
 import { useInstanceHopper, type InviteState } from './useInstanceHopper';
+import { useWorldTemplateNames } from './useWorldTemplateNames';
+import { WORLD_TEMPLATE_IDS } from './worldTemplates';
 
 const DEFAULT_MIN_USERS = 10;
 const MIN_USERS_LOWER_BOUND = 1;
+const WORLD_ID_PREVIEW_LENGTH = 13;
 
 function parseBoundedInteger(value: string, lowerBound: number): number {
     const parsed = Number.parseInt(value, 10);
@@ -27,12 +30,18 @@ export function InstanceHopperPage() {
     const [worldInput, setWorldInput] = useState('');
     const [minUsers, setMinUsers] = useState(DEFAULT_MIN_USERS);
     const hopper = useInstanceHopper({ worldInput, minUsers });
+    const templateNames = useWorldTemplateNames(WORLD_TEMPLATE_IDS);
 
     function handleSubmit(event: FormEvent<HTMLFormElement>) {
         event.preventDefault();
         if (!hopper.sending) {
             void hopper.scan();
         }
+    }
+
+    function selectTemplate(worldId: string) {
+        setWorldInput(worldId);
+        void hopper.scan(worldId);
     }
 
     return (
@@ -81,6 +90,24 @@ export function InstanceHopperPage() {
                     />
                 </div>
             </form>
+
+            <div className="flex flex-wrap items-center gap-2">
+                <span className="text-muted-foreground text-xs">
+                    {strings.templates}
+                </span>
+                {WORLD_TEMPLATE_IDS.map((worldId) => (
+                    <Button
+                        key={worldId}
+                        size="xs"
+                        variant="outline"
+                        disabled={hopper.scanning || hopper.sending}
+                        onClick={() => selectTemplate(worldId)}
+                    >
+                        {templateNames.get(worldId) ??
+                            `${worldId.slice(0, WORLD_ID_PREVIEW_LENGTH)}…`}
+                    </Button>
+                ))}
+            </div>
 
             <div className="flex flex-wrap items-center gap-2">
                 <Button
