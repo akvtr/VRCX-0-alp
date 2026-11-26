@@ -1,4 +1,4 @@
-import { CompassIcon, RouteIcon } from 'lucide-react';
+import { CompassIcon, MailIcon, RouteIcon } from 'lucide-react';
 import { useState } from 'react';
 
 import { EmptyState, PageScaffold } from '@/components/layout/PageScaffold';
@@ -118,8 +118,8 @@ export function InstanceHopperPage() {
                     title={strings.noCandidates}
                     variant="panel"
                 />
-            ) : (
-                <ul className="flex flex-col gap-2">
+            ) : hopper.candidates.length ? (
+                <ul className="bg-card/40 overflow-hidden rounded-md border">
                     {hopper.candidates.map((candidate) => (
                         <CandidateRow
                             key={candidate.location}
@@ -139,7 +139,7 @@ export function InstanceHopperPage() {
                         />
                     ))}
                 </ul>
-            )}
+            ) : null}
         </PageScaffold>
     );
 }
@@ -161,36 +161,52 @@ function CandidateRow({
 }) {
     const strings = useInstanceHopperStrings();
     return (
-        <li
-            className={cn(
-                'flex items-center gap-3 rounded-lg border px-3 py-2',
-                isCurrent && 'border-primary'
-            )}
-        >
-            <span className="w-24 font-mono text-sm">
-                #{candidate.instanceName}
-            </span>
-            <span className="text-muted-foreground w-12 text-xs uppercase">
+        <li className="group/row border-border/40 hover:bg-muted/25 flex items-start gap-3 border-b px-3 py-2 transition-colors last:border-b-0">
+            <span className="text-muted-foreground w-5 shrink-0 pt-0.5 text-[10px] font-medium uppercase">
                 {candidate.region}
             </span>
-            <span className="flex-1 text-sm">
+            <div className="flex min-w-0 flex-1 flex-col gap-0.5">
+                <span className="flex items-center gap-2 text-sm font-semibold">
+                    Public #{candidate.instanceName}
+                    {isCurrent ? (
+                        <Badge className="h-4 px-1 text-[10px]">
+                            {strings.current}
+                        </Badge>
+                    ) : null}
+                </span>
+                <span className="text-muted-foreground text-xs">
+                    {lastJoinedAt
+                        ? `${strings.lastJoined} ${formatCompactDateTime(lastJoinedAt)}`
+                        : strings.neverJoined}
+                    {inviteState ? (
+                        <span
+                            className={cn(
+                                'ml-2',
+                                inviteState === 'failed'
+                                    ? 'text-destructive'
+                                    : 'text-primary'
+                            )}
+                        >
+                            {inviteState === 'failed'
+                                ? strings.inviteFailedBadge
+                                : strings.inviteSent}
+                        </span>
+                    ) : null}
+                </span>
+            </div>
+            <span className="text-muted-foreground pt-0.5 text-xs tabular-nums">
                 {candidate.userCount}
-                {capacity ? ` / ${capacity}` : ''} {strings.players}
+                {capacity ? `/${capacity}` : ''}
             </span>
-            <span className="text-muted-foreground w-40 text-xs">
-                {lastJoinedAt
-                    ? `${strings.lastJoined} ${formatCompactDateTime(lastJoinedAt)}`
-                    : strings.neverJoined}
-            </span>
-            {isCurrent ? <Badge>{strings.current}</Badge> : null}
-            {inviteState === 'sent' ? (
-                <Badge variant="secondary">{strings.inviteSent}</Badge>
-            ) : null}
-            {inviteState === 'failed' ? (
-                <Badge variant="destructive">{strings.inviteFailedBadge}</Badge>
-            ) : null}
-            <Button size="sm" variant="ghost" onClick={onInvite}>
-                {strings.invite}
+            <Button
+                size="icon-xs"
+                variant="ghost"
+                title={strings.invite}
+                aria-label={strings.invite}
+                className="text-muted-foreground group-hover/row:text-foreground"
+                onClick={onInvite}
+            >
+                <MailIcon />
             </Button>
         </li>
     );
