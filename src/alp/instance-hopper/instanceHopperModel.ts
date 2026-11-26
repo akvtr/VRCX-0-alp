@@ -66,3 +66,29 @@ export function isSameInstance(left: string, right: string): boolean {
         leftParsed.instanceName === rightParsed.instanceName
     );
 }
+
+export type PreviousInstanceVisit = {
+    location: string;
+    created_at: string;
+};
+
+/**
+ * Maps each instance number to the most recent time the user joined it,
+ * using the local Game Log rows for one world.
+ */
+export function buildLastJoinedByInstance(
+    visits: PreviousInstanceVisit[]
+): Map<string, string> {
+    const lastJoined = new Map<string, string>();
+    for (const visit of visits) {
+        const instanceName = parseLocation(visit.location).instanceName;
+        if (!instanceName || !visit.created_at) {
+            continue;
+        }
+        const previous = lastJoined.get(instanceName);
+        if (!previous || Date.parse(visit.created_at) > Date.parse(previous)) {
+            lastJoined.set(instanceName, visit.created_at);
+        }
+    }
+    return lastJoined;
+}

@@ -132,6 +132,9 @@ export function InstanceHopperPage() {
                             inviteState={hopper.inviteStates.get(
                                 candidate.location
                             )}
+                            lastJoinedAt={hopper.lastJoinedByInstance.get(
+                                candidate.instanceName
+                            )}
                             onInvite={() => void hopper.inviteTo(candidate)}
                         />
                     ))}
@@ -146,12 +149,14 @@ function CandidateRow({
     capacity,
     isCurrent,
     inviteState,
+    lastJoinedAt,
     onInvite
 }: {
     candidate: HopperCandidate;
     capacity: number;
     isCurrent: boolean;
     inviteState: InviteState | undefined;
+    lastJoinedAt: string | undefined;
     onInvite: () => void;
 }) {
     const strings = useInstanceHopperStrings();
@@ -171,6 +176,11 @@ function CandidateRow({
             <span className="flex-1 text-sm">
                 {candidate.userCount}
                 {capacity ? ` / ${capacity}` : ''} {strings.players}
+            </span>
+            <span className="text-muted-foreground w-40 text-xs">
+                {lastJoinedAt
+                    ? `${strings.lastJoined} ${formatCompactDateTime(lastJoinedAt)}`
+                    : strings.neverJoined}
             </span>
             {isCurrent ? <Badge>{strings.current}</Badge> : null}
             {inviteState === 'sent' ? (

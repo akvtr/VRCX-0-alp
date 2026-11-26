@@ -1,6 +1,7 @@
 import { describe, expect, it } from 'vitest';
 
 import {
+    buildLastJoinedByInstance,
     extractWorldId,
     isSameInstance,
     parseWorldInstances,
@@ -78,5 +79,29 @@ describe('isSameInstance', () => {
             false
         );
         expect(isSameInstance('', `${WORLD_ID}:12345`)).toBe(false);
+    });
+});
+
+describe('buildLastJoinedByInstance', () => {
+    it('keeps the latest join per instance number', () => {
+        const result = buildLastJoinedByInstance([
+            {
+                location: `${WORLD_ID}:12345~region(jp)`,
+                created_at: '2026-11-01T10:00:00.000Z'
+            },
+            {
+                location: `${WORLD_ID}:12345~region(jp)`,
+                created_at: '2026-11-20T10:00:00.000Z'
+            },
+            {
+                location: `${WORLD_ID}:67890`,
+                created_at: '2026-11-05T10:00:00.000Z'
+            },
+            { location: `${WORLD_ID}:11111`, created_at: '' }
+        ]);
+        expect(Object.fromEntries(result)).toEqual({
+            '12345': '2026-11-20T10:00:00.000Z',
+            '67890': '2026-11-05T10:00:00.000Z'
+        });
     });
 });

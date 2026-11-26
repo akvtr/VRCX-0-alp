@@ -23,7 +23,9 @@ const english = {
     current: 'You are here',
     inviteSent: 'Invited',
     inviteFailedBadge: 'Failed',
-    lastScanned: 'Last scanned'
+    lastScanned: 'Last scanned',
+    lastJoined: 'Last joined',
+    neverJoined: 'Never joined'
 };
 
 type HopperStrings = typeof english;
@@ -51,7 +53,9 @@ const japanese: HopperStrings = {
     current: '現在地',
     inviteSent: '送信済み',
     inviteFailedBadge: '失敗',
-    lastScanned: '最終スキャン'
+    lastScanned: '最終スキャン',
+    lastJoined: '最終参加',
+    neverJoined: '参加履歴なし'
 };
 
 export function useInstanceHopperStrings(): HopperStrings {

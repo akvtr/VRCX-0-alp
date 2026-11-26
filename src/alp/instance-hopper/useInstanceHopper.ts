@@ -1,11 +1,13 @@
 import { useCallback, useEffect, useRef, useState } from 'react';
 
+import gameLogRepository from '@/repositories/gameLogRepository';
 import worldProfileRepository from '@/repositories/worldProfileRepository';
 import { selfInviteToInstance } from '@/services/launchService';
 import { toast } from '@/services/toastService';
 import { useRuntimeStore } from '@/state/runtimeStore';
 
 import {
+    buildLastJoinedByInstance,
     extractWorldId,
     parseWorldInstances,
     selectCandidates,
@@ -41,6 +43,9 @@ export function useInstanceHopper(settings: HopperSettings) {
     const [inviteStates, setInviteStates] = useState<
         ReadonlyMap<string, InviteState>
     >(new Map());
+    const [lastJoinedByInstance, setLastJoinedByInstance] = useState<
+        ReadonlyMap<string, string>
+    >(new Map());
     const [nextSendAt, setNextSendAt] = useState<number | null>(null);
     const [now, setNow] = useState(() => Date.now());
 
@@ -59,11 +64,19 @@ export function useInstanceHopper(settings: HopperSettings) {
         }
         setScanning(true);
         try {
-            // force bypasses the summary cache, which drops the instance list.
-            const world = await worldProfileRepository.getWorldProfile({
-                worldId: nextWorldId,
-                force: true
-            });
+            const [world, previousVisits] = await Promise.all([
+                // force bypasses the summary cache, which drops the instance list.
+                worldProfileRepository.getWorldProfile({
+                    worldId: nextWorldId,
+                    force: true
+                }),
+                // Join history is a nice-to-have; a Game Log failure must not
+                // block the scan.
+                gameLogRepository
+                    .getPreviousInstancesByWorldId({ worldId: nextWorldId })
+                    .catch(() => [])
+            ]);
+            setLastJoinedByInstance(buildLastJoinedByInstance(previousVisits));
             const selected = selectCandidates(
                 parseWorldInstances(nextWorldId, world),
                 settingsRef.current.minUsers
@@ -167,6 +180,7 @@ export function useInstanceHopper(settings: HopperSettings) {
         worldName,
         capacity,
         candidates,
+        lastJoinedByInstance,
         lastScannedAt,
         scanning,
         sending,

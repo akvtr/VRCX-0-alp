@@ -14,6 +14,9 @@ import {
 vi.mock('@/repositories/worldProfileRepository', () => ({
     default: { getWorldProfile: vi.fn() }
 }));
+vi.mock('@/repositories/gameLogRepository', () => ({
+    default: { getPreviousInstancesByWorldId: vi.fn().mockResolvedValue([]) }
+}));
 vi.mock('@/services/launchService', () => ({
     selfInviteToInstance: vi.fn()
 }));
