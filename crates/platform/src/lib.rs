@@ -1,3 +1,4 @@
+pub mod alp_seed;
 pub mod app_paths;
 pub mod error;
 pub mod error_log;
