@@ -238,9 +238,9 @@ jobs:
                   case "${{ matrix.platform }}" in
                       windows_x86_64)
                           if [[ "$PACKAGE_VARIANT" == "preview" ]]; then
-                              source="target/debug/vrcx-0.exe"
+                              source="target/debug/VRCX-0-alp.exe"
                           else
-                              source="target/release/vrcx-0.exe"
+                              source="target/release/VRCX-0-alp.exe"
                           fi
                           cp "$source" "package-assets/${stem}_windows_x86_64.exe"
                           ;;

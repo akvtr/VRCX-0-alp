@@ -125,7 +125,7 @@ it in the tray; use the tray icon's quit option in that case.
 npm run tauri:build -- --no-sign --no-bundle
 ```
 
-The executable is written to `target\release\vrcx-0.exe`.
+The executable is written to `target\release\VRCX-0-alp.exe`.
 
 ### Before the first launch
 
