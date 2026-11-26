@@ -66,17 +66,3 @@ export function isSameInstance(left: string, right: string): boolean {
         leftParsed.instanceName === rightParsed.instanceName
     );
 }
-
-export function findNextCandidate(
-    candidates: HopperCandidate[],
-    visitedLocations: ReadonlySet<string>,
-    currentLocation: string
-): HopperCandidate | null {
-    return (
-        candidates.find(
-            (candidate) =>
-                !visitedLocations.has(candidate.location) &&
-                !isSameInstance(candidate.location, currentLocation)
-        ) ?? null
-    );
-}

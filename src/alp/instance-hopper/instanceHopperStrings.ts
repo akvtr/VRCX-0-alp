@@ -3,14 +3,12 @@ import { useAlpLocale } from '../shared/useAlpLocale';
 const english = {
     title: 'Instance Hopper',
     description:
-        'Visit busy public instances of a world one by one with self-invites.',
+        'Send yourself invites to the busy public instances of a world, one every few seconds.',
     worldLabel: 'World ID or URL',
     worldPlaceholder: 'wrld_… or https://vrchat.com/home/world/…',
     minUsersLabel: 'Minimum players',
-    dwellLabel: 'Auto-advance after (minutes, 0 = manual)',
     scan: 'Scan',
-    start: 'Start hopping',
-    next: 'Next instance',
+    sendAll: 'Invite me to all',
     stop: 'Stop',
     invite: 'Invite me',
     invalidWorld: 'Enter a valid world ID or world URL.',
@@ -18,15 +16,13 @@ const english = {
     inviteFailed: 'Could not send the self-invite.',
     noCandidates:
         'No public instances meet the threshold. Only public instances are listed by VRChat.',
-    finished: 'Every matching instance has been visited.',
-    statusIdle: 'Idle',
-    statusInvited: 'Invite sent, waiting for you to join',
-    statusArrived: 'In the target instance',
-    statusAdvanceIn: 'Next in',
+    finished: 'Invites sent to every matching instance.',
+    sentProgress: 'Sent',
+    nextInviteIn: 'Next invite in',
     players: 'players',
-    visited: 'Visited',
     current: 'You are here',
-    target: 'Target',
+    inviteSent: 'Invited',
+    inviteFailedBadge: 'Failed',
     lastScanned: 'Last scanned'
 };
 
@@ -35,14 +31,12 @@ type HopperStrings = typeof english;
 const japanese: HopperStrings = {
     title: 'インスタンス巡回',
     description:
-        'ワールドの人が多い Public インスタンスを、自分宛ての invite で順番に巡ります。',
+        'ワールドの人が多い Public インスタンスへ、数秒おきに自分宛ての invite を送ります。',
     worldLabel: 'ワールド ID または URL',
     worldPlaceholder: 'wrld_… または https://vrchat.com/home/world/…',
     minUsersLabel: '最低人数',
-    dwellLabel: '自動で次へ進むまでの時間（分、0 = 手動）',
     scan: 'スキャン',
-    start: '巡回開始',
-    next: '次のインスタンスへ',
+    sendAll: '全部に自分を招待',
     stop: '停止',
     invite: '自分を招待',
     invalidWorld: '正しいワールド ID か URL を入力してください。',
@@ -50,15 +44,13 @@ const japanese: HopperStrings = {
     inviteFailed: '自分宛ての invite を送れませんでした。',
     noCandidates:
         '条件を満たす Public インスタンスがありません。VRChat が一覧に出すのは Public インスタンスだけです。',
-    finished: '条件に合うインスタンスはすべて巡回しました。',
-    statusIdle: '待機中',
-    statusInvited: 'invite 送信済み、参加待ち',
-    statusArrived: '目的のインスタンスにいます',
-    statusAdvanceIn: '次へ進むまで',
+    finished: '条件に合うすべてのインスタンスに invite を送りました。',
+    sentProgress: '送信済み',
+    nextInviteIn: '次の送信まで',
     players: '人',
-    visited: '訪問済み',
     current: '現在地',
-    target: '目的地',
+    inviteSent: '送信済み',
+    inviteFailedBadge: '失敗',
     lastScanned: '最終スキャン'
 };
 

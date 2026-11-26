@@ -2,7 +2,6 @@ import { describe, expect, it } from 'vitest';
 
 import {
     extractWorldId,
-    findNextCandidate,
     isSameInstance,
     parseWorldInstances,
     selectCandidates,
@@ -79,27 +78,5 @@ describe('isSameInstance', () => {
             false
         );
         expect(isSameInstance('', `${WORLD_ID}:12345`)).toBe(false);
-    });
-});
-
-describe('findNextCandidate', () => {
-    it('skips visited instances and the one the user is already in', () => {
-        const candidates = [
-            candidate('1', 40),
-            candidate('2', 30),
-            candidate('3', 20)
-        ];
-        const visited = new Set([candidates[0].location]);
-        expect(
-            findNextCandidate(candidates, visited, candidates[1].location)
-                ?.instanceName
-        ).toBe('3');
-        expect(
-            findNextCandidate(
-                candidates,
-                new Set(candidates.map((entry) => entry.location)),
-                ''
-            )
-        ).toBeNull();
     });
 });

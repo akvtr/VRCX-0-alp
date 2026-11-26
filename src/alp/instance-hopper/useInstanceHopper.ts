@@ -7,55 +7,53 @@ import { useRuntimeStore } from '@/state/runtimeStore';
 
 import {
     extractWorldId,
-    findNextCandidate,
-    isSameInstance,
     parseWorldInstances,
     selectCandidates,
     type HopperCandidate
 } from './instanceHopperModel';
 import { useInstanceHopperStrings } from './instanceHopperStrings';
 
-const MILLISECONDS_PER_MINUTE = 60_000;
+// Spacing between self-invites keeps a full pass well under VRChat's rate
+// limits while still covering a dozen instances in about a minute.
+export const INVITE_INTERVAL_MILLISECONDS = 5_000;
 const MILLISECONDS_PER_SECOND = 1_000;
 const COUNTDOWN_TICK_MILLISECONDS = MILLISECONDS_PER_SECOND;
 
 export type HopperSettings = {
     worldInput: string;
     minUsers: number;
-    dwellMinutes: number;
 };
 
-export type HopperStatus = 'idle' | 'invited' | 'arrived';
+export type InviteState = 'sent' | 'failed';
 
 export function useInstanceHopper(settings: HopperSettings) {
     const strings = useInstanceHopperStrings();
     const currentLocation = useRuntimeStore(
         (state) => state.gameState.currentLocation
     );
+    const [worldId, setWorldId] = useState('');
     const [worldName, setWorldName] = useState('');
     const [capacity, setCapacity] = useState(0);
     const [candidates, setCandidates] = useState<HopperCandidate[]>([]);
     const [lastScannedAt, setLastScannedAt] = useState<number | null>(null);
     const [scanning, setScanning] = useState(false);
-    const [hopping, setHopping] = useState(false);
-    const [target, setTarget] = useState<HopperCandidate | null>(null);
-    const [arrivedAt, setArrivedAt] = useState<number | null>(null);
-    const [visited, setVisited] = useState<ReadonlySet<string>>(new Set());
+    const [sending, setSending] = useState(false);
+    const [inviteStates, setInviteStates] = useState<
+        ReadonlyMap<string, InviteState>
+    >(new Map());
+    const [nextSendAt, setNextSendAt] = useState<number | null>(null);
     const [now, setNow] = useState(() => Date.now());
 
-    // The auto-advance timer fires outside React's render cycle, so it reads
-    // the latest values through refs instead of stale closures.
     const settingsRef = useRef(settings);
-    const visitedRef = useRef(visited);
-    const currentLocationRef = useRef(currentLocation);
+    // Bumped on stop so a running send loop notices and exits.
+    const runIdRef = useRef(0);
     useEffect(() => {
         settingsRef.current = settings;
-        currentLocationRef.current = currentLocation;
-    }, [currentLocation, settings]);
+    }, [settings]);
 
     const scan = useCallback(async (): Promise<HopperCandidate[] | null> => {
-        const worldId = extractWorldId(settingsRef.current.worldInput);
-        if (!worldId) {
+        const nextWorldId = extractWorldId(settingsRef.current.worldInput);
+        if (!nextWorldId) {
             toast.add({ type: 'error', title: strings.invalidWorld });
             return null;
         }
@@ -63,13 +61,14 @@ export function useInstanceHopper(settings: HopperSettings) {
         try {
             // force bypasses the summary cache, which drops the instance list.
             const world = await worldProfileRepository.getWorldProfile({
-                worldId,
+                worldId: nextWorldId,
                 force: true
             });
             const selected = selectCandidates(
-                parseWorldInstances(worldId, world),
+                parseWorldInstances(nextWorldId, world),
                 settingsRef.current.minUsers
             );
+            setWorldId(nextWorldId);
             setWorldName(world.name);
             setCapacity(world.capacity);
             setCandidates(selected);
@@ -83,122 +82,105 @@ export function useInstanceHopper(settings: HopperSettings) {
         }
     }, [strings]);
 
-    const stop = useCallback(() => {
-        setHopping(false);
-        setTarget(null);
-        setArrivedAt(null);
-    }, []);
+    const recordInviteState = useCallback(
+        (location: string, state: InviteState) => {
+            setInviteStates((current) => new Map(current).set(location, state));
+        },
+        []
+    );
 
     const inviteTo = useCallback(
         async (candidate: HopperCandidate): Promise<boolean> => {
             try {
                 await selfInviteToInstance(candidate.location);
+                recordInviteState(candidate.location, 'sent');
+                return true;
             } catch {
+                recordInviteState(candidate.location, 'failed');
                 toast.add({ type: 'error', title: strings.inviteFailed });
                 return false;
             }
-            const nextVisited = new Set(visitedRef.current);
-            nextVisited.add(candidate.location);
-            visitedRef.current = nextVisited;
-            setVisited(nextVisited);
-            setTarget(candidate);
-            setArrivedAt(null);
-            return true;
         },
-        [strings]
+        [recordInviteState, strings]
     );
 
-    const advance = useCallback(async () => {
-        // Rescan every hop so player counts are fresh, not from the first scan.
-        const fresh = await scan();
-        if (!fresh) {
-            stop();
+    const stop = useCallback(() => {
+        runIdRef.current += 1;
+        setSending(false);
+        setNextSendAt(null);
+    }, []);
+
+    const waitForNextSend = useCallback(
+        (runId: number) =>
+            new Promise<boolean>((resolve) => {
+                setNextSendAt(Date.now() + INVITE_INTERVAL_MILLISECONDS);
+                setTimeout(
+                    () => resolve(runIdRef.current === runId),
+                    INVITE_INTERVAL_MILLISECONDS
+                );
+            }),
+        []
+    );
+
+    const sendAll = useCallback(async () => {
+        const runId = runIdRef.current + 1;
+        runIdRef.current = runId;
+        const targets = await scan();
+        if (!targets?.length || runIdRef.current !== runId) {
             return;
         }
-        const next = findNextCandidate(
-            fresh,
-            visitedRef.current,
-            currentLocationRef.current
-        );
-        if (!next) {
+        setInviteStates(new Map());
+        setSending(true);
+        for (const [index, target] of targets.entries()) {
+            if (index > 0 && !(await waitForNextSend(runId))) {
+                return;
+            }
+            setNextSendAt(null);
+            await inviteTo(target);
+        }
+        if (runIdRef.current === runId) {
             toast.add({ type: 'success', title: strings.finished });
             stop();
-            return;
         }
-        if (!(await inviteTo(next))) {
-            stop();
-        }
-    }, [inviteTo, scan, stop, strings]);
+    }, [inviteTo, scan, stop, strings, waitForNextSend]);
 
-    const start = useCallback(async () => {
-        setVisited(new Set());
-        visitedRef.current = new Set();
-        setHopping(true);
-        await advance();
-    }, [advance]);
+    // Stop the loop when the page unmounts so invites don't keep going.
+    useEffect(() => stop, [stop]);
 
     useEffect(() => {
-        if (
-            target &&
-            !arrivedAt &&
-            isSameInstance(currentLocation, target.location)
-        ) {
-            setArrivedAt(Date.now());
-        }
-    }, [arrivedAt, currentLocation, target]);
-
-    const dwellMilliseconds = settings.dwellMinutes * MILLISECONDS_PER_MINUTE;
-    const autoAdvanceAt =
-        hopping && arrivedAt && dwellMilliseconds > 0
-            ? arrivedAt + dwellMilliseconds
-            : null;
-
-    useEffect(() => {
-        if (!autoAdvanceAt) {
+        if (!nextSendAt) {
             return;
         }
-        const timer = setTimeout(
-            () => {
-                void advance();
-            },
-            Math.max(0, autoAdvanceAt - Date.now())
-        );
         const ticker = setInterval(
             () => setNow(Date.now()),
             COUNTDOWN_TICK_MILLISECONDS
         );
-        return () => {
-            clearTimeout(timer);
-            clearInterval(ticker);
-        };
-    }, [advance, autoAdvanceAt]);
+        return () => clearInterval(ticker);
+    }, [nextSendAt]);
 
-    const status: HopperStatus = !target
-        ? 'idle'
-        : arrivedAt
-          ? 'arrived'
-          : 'invited';
+    const sentCount = [...inviteStates.values()].filter(
+        (state) => state === 'sent'
+    ).length;
 
     return {
+        worldId,
         worldName,
         capacity,
         candidates,
         lastScannedAt,
         scanning,
-        hopping,
-        target,
-        status,
-        visited,
+        sending,
+        inviteStates,
+        sentCount,
         currentLocation,
-        secondsUntilAdvance: autoAdvanceAt
+        secondsUntilNextSend: nextSendAt
             ? Math.max(
                   0,
-                  Math.ceil((autoAdvanceAt - now) / MILLISECONDS_PER_SECOND)
+                  Math.ceil((nextSendAt - now) / MILLISECONDS_PER_SECOND)
               )
             : null,
         scan,
-        start,
-        next: advance,
+        sendAll,
         stop,
         inviteTo
     };
