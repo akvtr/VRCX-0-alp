@@ -8,3 +8,6 @@ linker = "lld-link.exe"
 # to replace it with upstream VRCX-0.
 [env]
 VRCX_0_DISABLE_UPDATE_CHECK = "1"
+# Usage statistics from a modified build would skew upstream's data, so the
+# anonymous telemetry endpoint is left empty, which disables sending entirely.
+VRCX_0_TELEMETRY_ENDPOINT = ""
